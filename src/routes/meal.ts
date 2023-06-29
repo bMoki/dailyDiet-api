@@ -13,7 +13,7 @@ export async function mealRoutes(fastify: FastifyInstance) {
         name: z.string(),
         description: z.string(),
         dateTime: z.string(),
-        onDiet: z.coerce.boolean(),
+        onDiet: z.boolean(),
       })
 
       const { name, description, dateTime, onDiet } = createMealBody.parse(
@@ -33,6 +33,79 @@ export async function mealRoutes(fastify: FastifyInstance) {
       })
 
       return response.status(201).send()
+    },
+  )
+  fastify.put(
+    '/meal/:id',
+    { onRequest: [authenticate] },
+    async (request, response) => {
+      const getMealParamsSchema = z.object({
+        id: z.string().uuid(),
+      })
+      const getMealBodySchema = z.object({
+        name: z.string(),
+        description: z.string(),
+        dateTime: z.string(),
+        onDiet: z.coerce.boolean(),
+      })
+
+      const { name, description, onDiet, dateTime } = getMealBodySchema.parse(
+        request.body,
+      )
+      const { id } = getMealParamsSchema.parse(request.params)
+      const userId = request.user.sub
+
+      const meal = await knex('meal').where({ id, user: userId }).first()
+
+      if (!meal) {
+        return response.status(404).send({ message: 'Meal not found' })
+      }
+
+      await knex('meal')
+        .update({
+          name,
+          description,
+          onDiet,
+          dateTime,
+        })
+        .where({ id, user: userId })
+
+      return response.status(200).send()
+    },
+  )
+  fastify.delete(
+    '/meal/:id',
+    { onRequest: [authenticate] },
+    async (request, response) => {
+      const getMealParamsSchema = z.object({
+        id: z.string().uuid(),
+      })
+
+      const { id } = getMealParamsSchema.parse(request.params)
+      const userId = request.user.sub
+
+      await knex('meal').delete().where({ id, user: userId })
+
+      return response.status(200).send()
+    },
+  )
+  fastify.get(
+    '/meal/:id',
+    { onRequest: [authenticate] },
+    async (request, response) => {
+      const getMealParamsSchema = z.object({
+        id: z.string().uuid(),
+      })
+
+      const { id } = getMealParamsSchema.parse(request.params)
+      const userId = request.user.sub
+
+      const meal = await knex('meal').where({ id, user: userId }).first()
+
+      if (!meal) {
+        return response.status(404).send({ message: 'Meal not found' })
+      }
+      return { meal }
     },
   )
   fastify.get(
