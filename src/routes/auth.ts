@@ -34,8 +34,6 @@ export async function authRoutes(fastify: FastifyInstance) {
         expiresIn: '1 day',
       },
     )
-    console.log(user)
-
     return response.status(200).send({
       token,
     })

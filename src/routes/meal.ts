@@ -12,7 +12,7 @@ export async function mealRoutes(fastify: FastifyInstance) {
       const createMealBody = z.object({
         name: z.string(),
         description: z.string(),
-        dateTime: z.string(),
+        dateTime: z.string().datetime(),
         onDiet: z.boolean(),
       })
 
@@ -21,7 +21,6 @@ export async function mealRoutes(fastify: FastifyInstance) {
       )
 
       const userId = request.user.sub
-      console.log(userId)
 
       await knex('meal').insert({
         id: randomUUID(),
@@ -45,7 +44,7 @@ export async function mealRoutes(fastify: FastifyInstance) {
       const getMealBodySchema = z.object({
         name: z.string(),
         description: z.string(),
-        dateTime: z.string(),
+        dateTime: z.string().datetime(),
         onDiet: z.coerce.boolean(),
       })
 
